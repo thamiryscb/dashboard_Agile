@@ -1,0 +1,14 @@
+# Nunca publicar senhas, tokens, certificados privados ou dumps não autorizados
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+*.sql.gz
+*.dump
+*.bak
+*.pem
+*.key
+*.p12
+*.pfx
