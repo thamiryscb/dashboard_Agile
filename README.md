@@ -125,6 +125,27 @@ SHOW FULL TABLES WHERE Table_type = 'VIEW';
 
 O repositório contém o código da aplicação, mas não inclui o banco de dados completo nem credenciais de acesso.
 
+
+## Importação do banco de dados
+
+O repositório disponibiliza o arquivo
+`sql/analise_agil.sql`, contendo a estrutura
+e os dados utilizados pelo dashboard.
+
+Para importar no MySQL Workbench:
+
+1. Abra **Server → Data Import**.
+2. Selecione **Import from Self-Contained File**.
+3. Escolha `sql/analise_agil.sql`.
+4. Se necessário, selecione ou crie o schema `analise_agil`.
+5. Clique em **Start Import**.
+
+Após a importação, configure o arquivo
+`.streamlit/secrets.toml` e execute a aplicação.
+
+O banco contém registros históricos dos projetos
+Aurora, Meso, Spring XD e UserGrid.
+
 ## Considerações sobre os indicadores
 
 - **Entregas:** representam tarefas concluídas por sprint. Uma tarefa pode aparecer em diferentes ciclos.
