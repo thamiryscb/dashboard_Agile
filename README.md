@@ -1,103 +1,146 @@
+
 # Agile Scrum — Sprint Intelligence
 
-Painel interativo feito com **Streamlit + Plotly**, que consulta o banco **MySQL `analise_agil`**. Destina-se **exclusivamente à análise de Agile Scrum** dos projetos Aurora, Meso, Spring XD e UserGrid.
+Dashboard interativo desenvolvido em **Python, Streamlit e Plotly**, integrado ao banco de dados **MySQL (`analise_agil`)**.
 
-**Sem dados fictícios. Sem índices compostos artificiais nem métricas alheias ao Agile Scrum.** Não modifica registros: executa somente `SELECT`.
+A aplicação permite analisar indicadores de desempenho de quatro projetos de software livre: **Aurora, Meso, Spring XD e UserGrid**, utilizando dados históricos do Agile Scrum Sprint Velocity Dataset.
 
-## Conteúdo do dashboard
+O sistema realiza somente consultas (`SELECT`), sem modificar os registros do banco.
 
-- **Visão executiva:** projetos, sprints, tarefas concluídas, proporção de vínculos `Completed`, velocidade, alterações e comparativo visual de quatro KPIs independentes (conclusão, velocidade, entregas e escopo). Inclui insights calculados a partir dos resultados.
-- **Sprints e entregas:** média, mínimo, máximo, mediana, evolução por sprint, boxplot, velocidade média e tabela comparativa.
-- **Escopo e conclusão:** tarefas adicionadas/retiradas, gráficos de dispersão, H3 por faixas e correlações por projeto.
-- **Hipóteses H1–H3:** amplitude de entregas; correlação entre desenvolvedores e entregas (H2); correlação entre mudanças de escopo e proporção de vínculos concluídos (H3).
-- **Dados e auditoria:** qualidade dos registros, análise de ausências, tabelas filtradas e download de CSV.
+## Funcionalidades
 
-Filtros de projeto, estado e data inicial das sprints recalculam os indicadores. Os números do catálogo histórico seguem apenas o filtro de projeto (não data/estado), com aviso na interface.
+O dashboard disponibiliza:
 
-## Rodar no Windows com VS Code
+- **Visão executiva:** indicadores de projetos, sprints, entregas, velocidade e conclusão.
+- **Análise de entregas:** evolução temporal, médias, valores mínimos e máximos e dispersão por projeto.
+- **Análise de escopo:** tarefas adicionadas e retiradas durante as sprints.
+- **Hipóteses H1, H2 e H3:** investigação das entregas, tamanho das equipes e alterações de escopo.
+- **Exploração dos dados:** consultas, filtros interativos, verificações de qualidade e exportação CSV.
 
-1. Extraia o ZIP e abra esta pasta (`AgileScrum_Dashboard_Compartilhavel`) no VS Code.
-2. Copie `.streamlit/secrets.toml.example` para `.streamlit/secrets.toml`. Preencha com as credenciais do **seu MySQL** (preferencialmente usuário de leitura). Esse arquivo está no `.gitignore`.
-3. Para testar apenas no PC local, é possível usar seu usuário MySQL habitual; para compartilhar o painel, utilize a conta somente leitura indicada em `sql/usuario_somente_leitura.sql` (não publique credenciais `root`). No terminal PowerShell, execute:
+Os indicadores são recalculados conforme os filtros aplicados, respeitando as particularidades das métricas históricas.
 
-```powershell
-py -m pip install -r requirements.txt
-py -m streamlit run app.py --server.port 8502
-```
+## Tecnologias utilizadas
 
-4. Abra `http://localhost:8502`. A conexão é estabelecida pelo servidor; **não há caixa de login MySQL para visitantes**.
+- Python
+- Streamlit
+- Plotly
+- MySQL
+- mysql-connector-python
 
-> O código NÃO contém senha, dados CSV ou exportação do banco. Se os valores não aparecerem, verifique se o MySQL está em execução e as views necessárias existem.
-
-## Dados necessários no MySQL
-
-Banco `analise_agil` com:
-
-| Objeto | Uso |
-|---|---|
-| `vw_indicadores_sprint` | projeto, sprint_id, nome, estado, inicio, fim, total_tarefas, tarefas_concluidas, pontos_concluidos, taxa_conclusao |
-| `vw_conclusao_por_sprint` | projeto, sprint_id, total_vinculos, tarefas_concluidas, percentual_completed |
-| `vw_movimentacao_sprints` | projeto, sprint_id, tarefas_adicionadas, tarefas_retiradas |
-| `sprints` | projeto, sprint_id, qtd_desenvolvedores, origem_registro |
-| `tarefas_sprints` | projeto, sprint_id, status (e contagem histórica) |
-| `tarefas` | projeto (contagem histórica) |
-
-Todas as três views acima são **obrigatórias**. O painel interrompe a exibição quando alguma não está acessível, em vez de inventar resultados. A coluna `qtd_desenvolvedores` é necessária para H2. A base consolidada esperada tem **238 sprints originais**, além de duas referências incompletas fora da análise por sprint.
-
-Para conferir:
-
-```sql
-USE analise_agil;
-SELECT projeto, COUNT(*) FROM vw_conclusao_por_sprint GROUP BY projeto;
-SELECT projeto, COUNT(*) FROM vw_movimentacao_sprints GROUP BY projeto;
-SELECT projeto, COUNT(*) FROM vw_indicadores_sprint GROUP BY projeto;
-```
-
-## Tornar acessível por link (outras pessoas)
-
-Leia **`PUBLICACAO_ONLINE.md`** para duas maneiras de compartilhar: **(a)** link temporário via Cloudflare Tunnel mantendo o MySQL no seu PC; **(b)** publicação duradoura no Streamlit Community Cloud com GitHub e banco MySQL remoto. O arquivo inclui a diferença entre MySQL `127.0.0.1` e MySQL de nuvem, como adicionar Secrets e medidas de segurança.
-
-**Atenção:** subir apenas o código ao Streamlit Community Cloud **não torna seu MySQL local acessível**. Para uma URL que funcione fora do seu computador, o servidor Streamlit deve conseguir chegar ao banco. Solução recomendada: servidor MySQL remoto seguro, configurado com credencial de **somente leitura** e TLS com verificação de certificado. Não exponha seu MySQL doméstico diretamente na internet.
-
-O app pode ser público (qualquer pessoa com o link visualiza os indicadores) ou privado (acesso limitado a convidados), conforme as opções de compartilhamento da hospedagem. Visitantes nunca recebem as credenciais do banco.
-
-## Métricas e ressalvas
-
-- **Entregas:** soma de `tarefas_concluidas` por sprint, podendo somar registros de uma mesma tarefa em sprints distintas.
-- **Velocidade:** média de `pontos_concluidos` por sprint. Story points têm escala relativa a cada projeto; não são uma medida universal de produtividade.
-- **Conclusão:** no painel comparativo, `100 × soma(vinculos_completed) / soma(total_vinculos)` sobre as **sprints originais filtradas**. Difere da média simples das taxas individuais de sprint e pode diferir da taxa global que inclui as duas referências incompletas do UserGrid.
-- **Escopo:** adições + retiradas segundo a view de movimentação. Não significa sucesso ou fracasso.
-- **H1/H2/H3:** investigação descritiva; correlação de Pearson não é teste de significância e não permite inferir causalidade.
-- **Origem:** histórico dos quatro projetos de software livre do dataset Agile Scrum.
-
-## Estrutura
+## Estrutura do projeto
 
 ```text
-AgileScrum_Dashboard_Compartilhavel/
+dashboard_Agile/
 ├── app.py
 ├── analytics.py
 ├── data_layer.py
 ├── requirements.txt
 ├── README.md
-├── PUBLICACAO_ONLINE.md
-├── ROTEIRO_DEMO.md
-├── sql/usuario_somente_leitura.sql
 ├── .gitignore
+├── sql/
+│   └── usuario_somente_leitura.sql
 └── .streamlit/
     ├── config.toml
     └── secrets.toml.example
 ```
 
-Nenhuma credencial ou dump de dados é incluído no ZIP.
+## Como executar
 
-## Quando aparecer “Conexão de dados indisponível”
-
-A mensagem pública não detalha erros por segurança. Na pasta do projeto, rode:
+### 1. Clonar o repositório
 
 ```powershell
-py diagnostico_mysql.py
+git clone https://github.com/thamiryscb/dashboard_Agile.git
+cd dashboard_Agile
 ```
 
-O diagnóstico (1) procura `.streamlit/secrets.toml` na pasta correta; (2) valida a sintaxe TOML; (3) testa a autenticação; (4) consulta diretamente as views; (5) reproduz as junções e a validação das colunas do dashboard. **A senha não é impressa**. Se ele mostrar uma falha, compartilhe apenas o texto do erro, sem fornecer credenciais nem o conteúdo do arquivo `secrets.toml`.
+### 2. Instalar as dependências
 
-Se não houver o `secrets.toml`, **não basta editar `secrets.toml.example`**: é necessário fazer uma cópia com o nome exato `.streamlit/secrets.toml`. Caso utilize Windows, ative a opção de visualizar extensões de arquivos para evitar `secrets.toml.txt`.
+É necessário possuir Python e MySQL configurados.
+
+No terminal do VS Code, execute:
+
+```powershell
+py -m pip install -r requirements.txt
+```
+
+### 3. Configurar a conexão com MySQL
+
+Copie o arquivo:
+
+`.streamlit/secrets.toml.example`
+
+E renomeie a cópia para:
+
+`.streamlit/secrets.toml`
+
+Configure as credenciais do banco:
+
+```toml
+MYSQL_HOST = "127.0.0.1"
+MYSQL_PORT = 3306
+MYSQL_USER = "usuario_leitura"
+MYSQL_PASSWORD = "SUA_SENHA"
+MYSQL_DATABASE = "analise_agil"
+```
+
+O arquivo `secrets.toml` contém informações privadas e está incluído no `.gitignore`.
+
+**Importante:** nunca publique credenciais reais no GitHub. Recomenda-se utilizar um usuário MySQL com permissão somente de leitura.
+
+### 4. Executar o dashboard
+
+```powershell
+py -m streamlit run app.py --server.port 8502
+```
+
+Acesse no navegador:
+
+http://localhost:8502
+
+## Estrutura necessária no MySQL
+
+O banco `analise_agil` deve conter as tabelas:
+
+- `projetos`
+- `tarefas`
+- `sprints`
+- `tarefas_sprints`
+- `issues_origem`
+
+Também são necessárias as views:
+
+- `vw_indicadores_sprint`
+- `vw_conclusao_por_sprint`
+- `vw_movimentacao_sprints`
+
+A aplicação utiliza essas estruturas para consultar e calcular os indicadores apresentados.
+
+Para verificar se as views estão disponíveis:
+
+```sql
+USE analise_agil;
+
+SHOW FULL TABLES WHERE Table_type = 'VIEW';
+```
+
+O repositório contém o código da aplicação, mas não inclui o banco de dados completo nem credenciais de acesso.
+
+## Considerações sobre os indicadores
+
+- **Entregas:** representam tarefas concluídas por sprint. Uma tarefa pode aparecer em diferentes ciclos.
+- **Velocidade:** corresponde à média de pontos concluídos por sprint, considerando a escala de cada projeto.
+- **Conclusão:** representa a proporção de vínculos classificados como `Completed` no recorte analisado.
+- **Escopo:** considera tarefas adicionadas e retiradas durante as sprints.
+- **Hipóteses:** as análises são exploratórias. Correlações não representam necessariamente relações de causalidade.
+
+## Fonte dos dados
+
+Os dados foram obtidos do repositório público:
+
+[Agile Scrum Sprint Velocity Dataset](https://github.com/RandulaKoralage/AgileScrumSprintVelocityDataSet)
+
+O conjunto de dados reúne informações históricas de projetos de software livre extraídas da plataforma Jira.
+
+## Repositório
+
+Desenvolvido como parte do projeto acadêmico **EJFlow — Gerenciador de Projetos para Empresas Juniores**, da Universidade Federal do Rio Grande do Norte (UFRN).
