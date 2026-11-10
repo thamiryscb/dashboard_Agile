@@ -62,8 +62,24 @@ No terminal do VS Code, execute:
 ```powershell
 py -m pip install -r requirements.txt
 ```
+## 3. Importação do banco de dados
 
-### 3. Configurar a conexão com MySQL
+O repositório disponibiliza o arquivo
+`sql/analise_agil.sql`, contendo a estrutura
+e os dados utilizados pelo dashboard.
+
+Para importar no MySQL Workbench:
+
+1. Abra **Server → Data Import**.
+2. Selecione **Import from Self-Contained File**.
+3. Escolha `sql/analise_agil.sql`.
+4. Se necessário, selecione ou crie o schema `analise_agil`.
+5. Clique em **Start Import**.
+
+O banco contém registros históricos dos projetos
+Aurora, Meso, Spring XD e UserGrid.
+
+### 4. Configurar a conexão com MySQL
 
 Copie o arquivo:
 
@@ -87,7 +103,7 @@ O arquivo `secrets.toml` contém informações privadas e está incluído no `.g
 
 **Importante:** nunca publique credenciais reais no GitHub. Recomenda-se utilizar um usuário MySQL com permissão somente de leitura.
 
-### 4. Executar o dashboard
+### 5. Executar o dashboard
 
 ```powershell
 py -m streamlit run app.py --server.port 8502
@@ -125,23 +141,6 @@ SHOW FULL TABLES WHERE Table_type = 'VIEW';
 
 O repositório contém o código da aplicação, mas não inclui o banco de dados completo nem credenciais de acesso.
 
-
-## Importação do banco de dados
-
-O repositório disponibiliza o arquivo
-`sql/analise_agil.sql`, contendo a estrutura
-e os dados utilizados pelo dashboard.
-
-Para importar no MySQL Workbench:
-
-1. Abra **Server → Data Import**.
-2. Selecione **Import from Self-Contained File**.
-3. Escolha `sql/analise_agil.sql`.
-4. Se necessário, selecione ou crie o schema `analise_agil`.
-5. Clique em **Start Import**.
-
-O banco contém registros históricos dos projetos
-Aurora, Meso, Spring XD e UserGrid.
 
 ## Considerações sobre os indicadores
 
