@@ -140,9 +140,6 @@ Para importar no MySQL Workbench:
 4. Se necessário, selecione ou crie o schema `analise_agil`.
 5. Clique em **Start Import**.
 
-Após a importação, configure o arquivo
-`.streamlit/secrets.toml` e execute a aplicação.
-
 O banco contém registros históricos dos projetos
 Aurora, Meso, Spring XD e UserGrid.
 
